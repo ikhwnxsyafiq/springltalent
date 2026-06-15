@@ -1,14 +1,61 @@
 "use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { apiRequest } from "@/lib/api";
 
 export default function DashboardPage() {
-  // Dummy user data (will be replaced with real API later)
-  const user = {
-    name: "Muhammad Ikhwan",
-    university: "Universiti Malaya",
-    email: "ikhwan@example.com",
-    hasAttempted: false,
+  const router = useRouter();
+
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadUser() {
+      try {
+        const token = localStorage.getItem("springtalent_token");
+
+        if (!token) {
+          router.push("/login");
+          return;
+        }
+
+        const data = await apiRequest("/api/auth/me");
+
+        setUser({
+          name: data.full_name || "Candidate",
+          university: data.university || "SpringTalent Candidate",
+          email: data.email,
+          hasAttempted: false,
+        });
+      } catch (error) {
+        localStorage.removeItem("springtalent_token");
+        router.push("/login");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadUser();
+  }, [router]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("springtalent_token");
+    router.push("/login");
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
+        Loading dashboard...
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
@@ -18,10 +65,12 @@ export default function DashboardPage() {
         <h1 className="text-xl font-bold">🧑‍💻 SpringTalent</h1>
         <div className="flex items-center gap-4">
           <span className="text-gray-400 text-sm">Hi, {user.name}</span>
-          <Link href="/login"
-            className="text-sm text-gray-400 hover:text-white transition-colors">
-            Logout
-          </Link>
+<button
+  onClick={handleLogout}
+  className="text-sm text-gray-400 hover:text-white transition-colors"
+>
+  Logout
+</button>
         </div>
       </nav>
 
