@@ -24,7 +24,7 @@ export default function Home() {
         </p>
         <div className="flex gap-4 mt-10">
           {/* Direct link to assessment, no login/register */}
-          <Link href="/assessment">
+          <Link href="/candidate">
             <button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3 rounded-lg transition-colors">
               Start Assessment
             </button>

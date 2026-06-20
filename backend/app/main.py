@@ -2,14 +2,22 @@ from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes.auth import router as auth_router
 from app.core.database import Base, engine
 
+# Models
 from app.models.question import Question
 from app.models.assessment_session import AssessmentSession
-from app.api.routes.assessment import router as assessment_router
-
 from app.models.answer import Answer
+from app.models.user import User
+from app.models.candidate import Candidate
+from app.models.candidate_resume import CandidateResume
+
+# Routes
+from app.api.routes.auth import router as auth_router
+from app.api.routes.questions import router as question_router
+from app.api.routes.assessment import router as assessment_router
+from app.api.routes.candidate import router as candidate_router
+from app.api.routes.resume import router as resume_router
 
 app = FastAPI(
     title="SpringTalent API",
@@ -27,7 +35,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Create tables
 Base.metadata.create_all(bind=engine)
+
+# ==========================
+# ROUTERS
+# ==========================
 
 app.include_router(
     auth_router,
@@ -35,7 +48,34 @@ app.include_router(
     tags=["Auth"]
 )
 
-# 🔥 THIS IS THE KEY FIX
+app.include_router(
+    question_router,
+    prefix="/api/questions",
+    tags=["Questions"]
+)
+
+app.include_router(
+    assessment_router,
+    prefix="/api/assessment",
+    tags=["Assessment"]
+)
+
+app.include_router(
+    candidate_router,
+    prefix="/api/candidate",
+    tags=["Candidate"]
+)
+
+app.include_router(
+    resume_router,
+    prefix="/api/resume",
+    tags=["Resume"]
+)
+
+# ==========================
+# CUSTOM SWAGGER JWT
+# ==========================
+
 def custom_openapi():
     if app.openapi_schema:
         return app.openapi_schema
@@ -46,7 +86,6 @@ def custom_openapi():
         routes=app.routes,
     )
 
-    # 🔥 FORCE JWT AUTH SCHEME INTO SWAGGER
     openapi_schema["components"]["securitySchemes"] = {
         "BearerAuth": {
             "type": "http",
@@ -64,23 +103,15 @@ def custom_openapi():
     app.openapi_schema = openapi_schema
     return app.openapi_schema
 
+
 app.openapi = custom_openapi
 
+# ==========================
+# HOME
+# ==========================
 
 @app.get("/")
 def home():
-    return {"message": "SpringTalent API Running"}
-
-from app.api.routes.questions import router as question_router
-
-app.include_router(
-    question_router,
-    prefix="/api/questions",
-    tags=["Questions"]
-)
-
-app.include_router(
-    assessment_router,
-    prefix="/api/assessment",
-    tags=["Assessment"]
-)
+    return {
+        "message": "SpringTalent API Running"
+    }

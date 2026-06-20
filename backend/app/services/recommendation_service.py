@@ -3,6 +3,16 @@ from app.services.role_matching_service import (
 )
 
 
+DISPLAY_NAMES = {
+    "digital_design": "Digital Design",
+    "analog_design": "Analog Design",
+    "backend": "Physical Design",
+    "mixed_signal": "Mixed Signal",
+    "verification": "Verification",
+    "eda_tools": "EDA Tools"
+}
+
+
 def generate_recommendation(result):
 
     domain_scores = result.get(
@@ -33,18 +43,31 @@ def generate_recommendation(result):
         key=lambda x: x[1]
     )
 
-    strengths = [
-        domain
-        for domain, score
-        in sorted_high[:2]
-    ]
+    strengths = []
 
-    weaknesses = [
-        domain
-        for domain, score
-        in sorted_low[:2]
-        if domain not in strengths
-    ]
+    for domain, score in sorted_high:
+
+        if score >= 70:
+
+            strengths.append(
+                DISPLAY_NAMES.get(
+                    domain,
+                    domain
+                )
+            )
+
+    weaknesses = []
+
+    for domain, score in sorted_low:
+
+        if score < 70:
+
+            weaknesses.append(
+                DISPLAY_NAMES.get(
+                    domain,
+                    domain
+                )
+            )
 
     learning_mapping = {
         "digital_design":
@@ -80,17 +103,20 @@ def generate_recommendation(result):
     )
 
     if answered_questions < 10:
+
         assessment_confidence = "Low"
 
     elif answered_questions < 30:
+
         assessment_confidence = "Medium"
 
     else:
+
         assessment_confidence = "High"
 
     alternative_roles = []
 
-    for role, score in role_matches[1:3]:
+    for role, score in role_matches[1:4]:
 
         alternative_roles.append(
             {
@@ -101,28 +127,45 @@ def generate_recommendation(result):
 
     learning_recommendations = []
 
-    for domain in weaknesses:
+    for domain, score in domain_scores.items():
 
-        recommendation = learning_mapping.get(
-            domain
-        )
+        if score < 70:
 
-        if recommendation:
-            learning_recommendations.append(
-                recommendation
+            recommendation = learning_mapping.get(
+                domain
             )
 
+            if recommendation:
+
+                learning_recommendations.append(
+                    recommendation
+                )
+
+    if strengths:
+
+        strengths_text = ", ".join(strengths)
+
+    else:
+
+        strengths_text = "No significant strengths identified"
+
+    if weaknesses:
+
+        weaknesses_text = ", ".join(weaknesses)
+
+    else:
+
+        weaknesses_text = "No major skill gaps identified"
+
     summary = (
-        f"Candidate demonstrates strong capability in "
-        f"{', '.join(strengths)}. "
-        f"The most suitable role is "
-        f"{recommended_role}. "
-        f"Career fit score is "
+        f"The candidate is most suitable for the role of "
+        f"{recommended_role} with a career fit score of "
         f"{career_fit_score}%. "
-        f"Assessment confidence is "
+        f"Assessment confidence is rated as "
         f"{assessment_confidence}. "
-        f"Further development is recommended in "
-        f"{', '.join(weaknesses) if weaknesses else 'other technical domains'}."
+        f"Key strengths include {strengths_text}. "
+        f"Areas for further development include "
+        f"{weaknesses_text}."
     )
 
     return {

@@ -7,15 +7,21 @@ from sqlalchemy.orm import Session
 
 from app.core.dependencies import get_db
 
+from app.models.candidate import Candidate
+
 from app.models.assessment_session import AssessmentSession
 from app.models.question import Question
 from app.models.answer import Answer
 
-from app.schemas.assessment import SubmitAnswerRequest
+from app.schemas.assessment import (
+    SubmitAnswerRequest,
+    StartAssessmentRequest
+)
 
 from app.services.adaptive_engine import (
     generate_quick_assessment,
-    generate_full_assessment
+    generate_full_assessment,
+    generate_domain_assessment
 )
 
 from app.services.assessment_report_service import (
@@ -31,11 +37,12 @@ router = APIRouter()
 
 @router.post("/start")
 def start_assessment(
+    request: StartAssessmentRequest,
     db: Session = Depends(get_db)
 ):
 
     session = AssessmentSession(
-        user_id=1
+        user_id=request.candidate_id
     )
 
     db.add(session)
@@ -140,6 +147,36 @@ def get_full_assessment(
     }
 
 
+@router.get("/domain/{domain}")
+def get_domain_assessment(
+    domain: str,
+    db: Session = Depends(get_db)
+):
+
+    questions = generate_domain_assessment(
+        db,
+        domain
+
+    )
+
+    return {
+        "assessment_type": domain,
+        "total_questions": len(questions),
+        "questions": [
+            {
+                "id": q.id,
+                "question_text": q.question_text,
+                "option_a": q.option_a,
+                "option_b": q.option_b,
+                "option_c": q.option_c,
+                "option_d": q.option_d,
+                "domain": q.domain,
+                "difficulty": q.difficulty
+            }
+            for q in questions
+        ]
+    }
+
 @router.get("/result/{session_id}")
 def get_assessment_result(
     session_id: int,
@@ -190,10 +227,18 @@ def download_assessment_report(
         db=db,
         session_id=session_id
     )
-
+    candidate = (
+        db.query(Candidate)
+        .filter(
+            Candidate.id == session.user_id
+        )
+        .first()
+    )
+    
     pdf_buffer = generate_pdf_report(
         session_id=session_id,
-        report_data=report_data
+        report_data=report_data,
+        candidate=candidate
     )
 
     return StreamingResponse(
@@ -204,3 +249,50 @@ def download_assessment_report(
             f"attachment; filename=SpringTalent_Assessment_Report_{session_id}.pdf"
         }
     )
+
+
+@router.post("/complete/{session_id}")
+def complete_assessment(
+    session_id: int,
+    db: Session = Depends(get_db)
+):
+    session = (
+        db.query(AssessmentSession)
+        .filter(
+            AssessmentSession.id == session_id
+        )
+        .first()
+    )
+
+    if not session:
+        raise HTTPException(
+            status_code=404,
+            detail="Assessment session not found"
+        )
+
+    session.status = "completed"
+    db.commit()
+
+    return {
+        "message": "Assessment completed",
+        "session_id": session.id,
+        "status": session.status
+    }
+
+
+@router.get("/debug/sessions")
+def debug_sessions(
+    db: Session = Depends(get_db)
+):
+    sessions = (
+        db.query(AssessmentSession)
+        .all()
+    )
+    return [
+        {
+            "session_id": session.id,
+            "user_id": session.user_id,
+            "status": session.status
+        }
+        for session in sessions
+    ]

@@ -165,4 +165,19 @@ def generate_full_assessment(db: Session):
         FULL_TOTAL
     )
 
+def generate_domain_assessment(
+        db: Session,
+        domain: str,
+):
+    
+    questions = (
+        db.query(Question)
+        .filter(
+            Question.domain == domain
+    )
+    .all()
+    )
+
+    random.shuffle(questions)
+    return questions[:5]
   
