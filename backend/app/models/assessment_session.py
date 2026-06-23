@@ -11,7 +11,12 @@ class AssessmentSession(Base):
 
     user_id = Column(Integer, ForeignKey("users.id"))
 
-    status = Column(String, default="in_progress")
-    # in_progress / completed
+    status = Column(
+        String,
+        default="in_progress"
+    )
 
-    started_at = Column(DateTime, default=datetime.utcnow)
+    started_at = Column(
+        DateTime,
+        default=datetime.utcnow
+    )

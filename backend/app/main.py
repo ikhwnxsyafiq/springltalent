@@ -18,6 +18,7 @@ from app.api.routes.questions import router as question_router
 from app.api.routes.assessment import router as assessment_router
 from app.api.routes.candidate import router as candidate_router
 from app.api.routes.resume import router as resume_router
+from app.api.routes.leaderboard import router as leaderboard_router
 
 app = FastAPI(
     title="SpringTalent API",
@@ -70,6 +71,12 @@ app.include_router(
     resume_router,
     prefix="/api/resume",
     tags=["Resume"]
+)
+
+app.include_router(
+    leaderboard_router,
+    prefix="/api/leaderboard",
+    tags=["Leaderboard"]
 )
 
 # ==========================
