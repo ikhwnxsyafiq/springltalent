@@ -1,8 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useState,
+  Suspense
+} from "react";
+
+
 import { useSearchParams } from "next/navigation";
 import { apiRequest } from "@/lib/api";
+
 
 import {
   RadarChart,
@@ -24,12 +31,16 @@ const DOMAIN_LABELS = {
 };
 
 
-export default function ResultsPage() {
+function ResultsPageContent() {
   
   
   const searchParams = useSearchParams();
 
   const sessionId = searchParams.get("session_id");
+
+  const API_URL =
+    process.env.NEXT_PUBLIC_API_URL ||
+    "http://127.0.0.1:8000";
 
   const [report, setReport] = useState(null);
   const [candidate, setCandidate] = useState(null);
@@ -405,7 +416,7 @@ export default function ResultsPage() {
         <div className="mt-8">
 
           <a
-            href={`http://127.0.0.1:8000/api/assessment/report/${sessionId}`}
+            href={`${API_URL}/api/assessment/report/${sessionId}`}
             target="_blank"
             rel="noreferrer"
             className="inline-block bg-cyan-600 hover:bg-cyan-700 px-6 py-3 rounded-lg font-semibold"
@@ -417,5 +428,19 @@ export default function ResultsPage() {
 
       </div>
     </main>
+  );
+}
+
+export default function ResultsPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
+          Loading...
+        </main>
+      }
+    >
+      <ResultsPageContent />
+    </Suspense>
   );
 }
