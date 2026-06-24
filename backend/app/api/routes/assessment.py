@@ -42,7 +42,7 @@ def start_assessment(
 ):
 
     session = AssessmentSession(
-        user_id=request.candidate_id
+        candidate_id=request.candidate_id
     )
 
     db.add(session)
@@ -230,7 +230,7 @@ def download_assessment_report(
     candidate = (
         db.query(Candidate)
         .filter(
-            Candidate.id == session.user_id
+            Candidate.id == session.candidate_id
         )
         .first()
     )
@@ -291,7 +291,7 @@ def debug_sessions(
     return [
         {
             "session_id": session.id,
-            "user_id": session.user_id,
+            "candidate_id": session.candidate_id,
             "status": session.status
         }
         for session in sessions

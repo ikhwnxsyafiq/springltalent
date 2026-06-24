@@ -34,7 +34,7 @@ def get_leaderboard(
         candidate = (
             db.query(Candidate)
             .filter(
-                Candidate.id == session.user_id
+                Candidate.id == session.candidate_id
             )
             .first()
         )

@@ -9,7 +9,7 @@ class AssessmentSession(Base):
 
     id = Column(Integer, primary_key=True, index=True)
 
-    user_id = Column(Integer, ForeignKey("users.id"))
+    candidate_id = Column(Integer, ForeignKey("candidates.id"))
 
     status = Column(
         String,
