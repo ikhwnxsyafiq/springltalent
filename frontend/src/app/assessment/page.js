@@ -32,13 +32,37 @@ export default function AssessmentPage() {
       ? ((currentIndex + 1) / questions.length) * 100
       : 0;
 
-  const handleResumeUpload = (event) => {
+  const handleResumeUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
+
+    try {
+      const candidateId = localStorage.getItem("candidate_id");
+      const formData = new FormData();
+      formData.append("file", file);
+      const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+      const response = await fetch(
+        `${API_URL}/api/resume/upload/${candidateId}`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Resume upload failed");
+      }
+
+      const data = await response.json();
+      console.log("Resume uploaded:", data);
       setResumeFile(file);
       setResumeUploaded(true);
-
-    };
+    } catch (error) {
+      console.error(error);
+      alert("Resume upload failed");
+    }
+  };
 
   const loadAssessment = async (type) => {
     try {
