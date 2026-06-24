@@ -15,6 +15,8 @@ export default function AssessmentPage() {
   const [error, setError] = useState("");
   const [sessionId, setSessionId] = useState(null);
 
+  const [candidates, setCandidates] = useState([]);
+
   const [selectedBox, setSelectedBox] = useState("Quick Assessment"); // track clicked box
 
   const [resumeUploaded, setResumeUploaded] = useState(false); // track if resume is uploaded
@@ -98,13 +100,6 @@ export default function AssessmentPage() {
  };
 
 
-  // Dummy candidate scores for left panel
-  const candidates = [
-    { name: "Amirah", domain: "Digital Design", score: 98 },
-    { name: "Aina", domain: "Analog Design", score: 70 },
-    { name: "Ikhwan", domain: "Mixed-Signal", score: 85 },
-    { name: "Daniel", domain: "EDA Tools", score: 75 },
-  ];
 
   // Boxes for domains + quick/full assessment
   const boxes = [
@@ -179,6 +174,12 @@ export default function AssessmentPage() {
         );
 
         setQuestions(data.questions || []);
+
+        const leaderboard = await apiRequest(
+          "/api/leaderboard"
+        );
+        setCandidates(leaderboard);
+
       } catch (error) {
         setError(error.message);
       } finally {
@@ -271,12 +272,12 @@ export default function AssessmentPage() {
           </h3>
           {candidates.map((c) => (
             <div
-              key={c.name}
+              key={c.candidate_id}
               className="bg-gray-800 p-3 rounded-lg border border-gray-700"
             >
               <p className="font-semibold">{c.name}</p>
               <p className="text-sm text-gray-400">
-                {c.domain}: {c.score}%
+                Score: {c.score}%
               </p>
             </div>
           ))}
