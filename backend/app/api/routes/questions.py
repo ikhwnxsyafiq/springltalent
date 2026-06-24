@@ -1,5 +1,9 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+
+import csv
+from pathlib import Path
+
 from app.core.dependencies import get_db
 from app.models.question import Question
 
@@ -41,3 +45,48 @@ def cleanup_old_questions(db: Session = Depends(get_db)):
     return {
         "message": f"Deleted {deleted} old questions"
     }
+
+@router.post("/import")
+def import_questions(db: Session = Depends(get_db)):
+
+    BASE_DIR = Path(__file__).resolve().parents[3]
+    csv_file = BASE_DIR / "questions.csv"
+
+    imported = 0
+
+    with open(csv_file, newline="", encoding="utf-8") as file:
+        reader = csv.DictReader(file)
+
+        for row in reader:
+
+            existing = (
+                db.query(Question)
+                .filter(
+                    Question.question_text == row["question_text"]
+                )
+                .first()
+            )
+
+            if existing:
+                continue
+
+            question = Question(
+                question_text=row["question_text"],
+                option_a=row["Option_A"],
+                option_b=row["Option_B"],
+                option_c=row["Option_C"],
+                option_d=row["Option_D"],
+                correct_answer=row["correct_answer"],
+                domain=row["domain"],
+                difficulty=2
+            )
+
+            db.add(question)
+            imported += 1
+
+        db.commit()
+
+    return {
+        "message": "Questions imported successfully",
+        "imported": imported
+    }    
