@@ -96,3 +96,17 @@ from app.core.security import oauth2_scheme
 @router.get("/me")
 def get_me(token: str = Depends(oauth2_scheme)):
     return {"token_received": token}
+
+
+@router.get("/debug/users")
+def debug_users(db: Session = Depends(get_db)):
+    users = db.query(User).all()
+
+    return [
+        {
+            "id": user.id,
+            "email": user.email,
+            "full_name": user.full_name
+        }
+        for user in users
+    ]
