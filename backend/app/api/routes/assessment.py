@@ -40,8 +40,7 @@ def start_assessment(
     request: StartAssessmentRequest,
     db: Session = Depends(get_db)
 ):
-    print("DEBUG candidate_id:", request.candidate_id_
-          )
+    print("DEBUG candidate_id:", request.candidate_id)
     session = AssessmentSession(
         candidate_id=request.candidate_id
     )
