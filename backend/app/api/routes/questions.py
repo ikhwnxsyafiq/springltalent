@@ -15,7 +15,7 @@ def seed_questions(db: Session = Depends(get_db)):
         option_c="Filtering",
         option_d="Power control",
         correct_answer="B",
-        domain="digital",
+        domain="digital_design",
         difficulty=1
     )
 
