@@ -106,7 +106,7 @@ def get_candidate_report(
     latest_session = (
         db.query(AssessmentSession)
         .filter(
-            AssessmentSession.user_id == candidate_id
+            AssessmentSession.candidate_id == candidate_id
         )
         .order_by(
             AssessmentSession.id.desc()
