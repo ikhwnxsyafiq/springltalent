@@ -6,7 +6,9 @@ export default function Home() {
 
       {/* Navbar */}
       <nav className="flex items-center justify-between px-8 py-5 border-b border-gray-800">
-        <h1 className="text-xl font-bold">🧑‍💻 SpringTalent</h1>
+        <h1 className="text-xl font-bold">
+          SpringTalent
+        </h1>
       </nav>
 
       {/* Hero Section */}
