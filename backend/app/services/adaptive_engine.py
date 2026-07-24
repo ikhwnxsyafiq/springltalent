@@ -27,15 +27,15 @@ QUICK_DISTRIBUTION = {
     "eda_tools": 1
 }
 
-FULL_TOTAL = 60
+FULL_TOTAL = 50
 
 FULL_DISTRIBUTION = {
-    "digital_design": 10,
-    "analog_design": 10,
+    "digital_design": 15,
+    "analog_design": 11,
     "backend": 10,
-    "mixed_signal": 10,
-    "verification": 10,
-    "eda_tools": 10
+    "mixed_signal": 6,
+    "verification": 5,
+    "eda_tools": 3
 }
 
 
